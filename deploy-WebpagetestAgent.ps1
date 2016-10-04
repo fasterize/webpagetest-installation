@@ -5,7 +5,7 @@ Function Deploy-WebPagetest(){
         [String]$DomainName = "localhost",
         [String]$Logfile = "C:\Windows\Temp\Deploy-WebPageTest.log",
         [String]$wpt_host =  $env:COMPUTERNAME,
-        [String]$wpt_user = "wptuser",
+        [String]$wpt_user = "Administrator",
         [String]$driver_installer_file = "mindinst.exe",
         [String]$driver_installer_cert_file = "WPOFoundation.cer",
         [String]$wpt_agent_dir = "C:\webpagetest",
@@ -117,11 +117,12 @@ Function Deploy-WebPagetest(){
         } Else {
             net user /add $Username *>> $Logfile
             net localgroup Administrators /add $Username *>> $Logfile
-            $user = [ADSI]("WinNT://./$Username")
-            $user.SetPassword($Password)
-            $user.SetInfo()
             Write-Log "[$(Get-Date)] $Username created."
         }
+        $user = [ADSI]("WinNT://./$Username")
+        $user.SetPassword($Password)
+        $user.SetInfo()
+        Write-Log "[$(Get-Date)] $Password updated."
     }
     function Set-AutoLogon ($Username, $Password){
         $LogonPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
