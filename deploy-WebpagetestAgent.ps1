@@ -337,7 +337,7 @@ Function Deploy-WebPagetest(){
     }
 
     # => Main
-    Set-WindowsLicense $windows_LicenseKey
+    Set-WindowsLicense -LicenseKey $windows_LicenseKey
     Activate-Windows-Update
     Set-Keyboard -Lang $lang
     ExtendPartition
