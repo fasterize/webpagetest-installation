@@ -24,10 +24,11 @@ Function Deploy-WebPagetest(){
     Function Write-Log{
         Param ([string]$logstring)
         Add-content $Logfile -value $logstring
+        Write-Output $logstring
     }
 
     # External Dependencies
-    $wpt_zip_url =  "https://github.com/WPO-Foundation/webpagetest/releases/download/WebPagetest-2.19/webpagetest_2.19.zip"
+    $wpt_zip_url =  "https://github.com/WPO-Foundation/webpagetest/releases/download/WebPageTest-2.19/webpagetest_2.19.zip"
     $wpt_zip_file = "webpagetest_2.19.zip"
 
     # Github Dependencies
@@ -69,11 +70,13 @@ Function Deploy-WebPagetest(){
         $shell.namespace($destinationPath).copyhere($shell.namespace("$sourcePath\$fileName").items()) *>> $Logfile
     }
 
-    function Set-WindowsLicence ($license) {
-        DISM /online /Set-Edition:ServerStandard /ProductKey:$LicenceKey /AcceptEula
+    function Set-WindowsLicense ($LicenseKey) {
+        Write-Log "[$(Get-Date)] Set Windows License."
+        DISM /online /Set-Edition:ServerStandard /ProductKey:$LicenseKey /AcceptEula
     }
 
     function Activate-Windows-Update () {
+        Write-Log "[$(Get-Date)] Activate Windows Update."
         $AUSettigns = (New-Object -com "Microsoft.Update.AutoUpdate").Settings
         $AUSettigns.NotificationLevel = 4
         $AUSettigns.Save()
@@ -83,24 +86,28 @@ Function Deploy-WebPagetest(){
         (get-content $filePath) | foreach-object {$_ -replace $stringToReplace, $replaceWith} | set-content $filePath *>> $Logfile
     }
 
-    function Set-Keyboard ($lang) {
-        Set-WinUserLanguageList -LanguageList $lang
+    function Set-Keyboard ($Lang) {
+        Write-Log "[$(Get-Date)] Set Keyboard to $lang."
+        Set-WinUserLanguageList -LanguageList $Lang
     }
 
     function ExtendPartition () {
+        Write-Log "[$(Get-Date)] Extend partition of drive C."
         $MaxSize = (Get-PartitionSupportedSize -DriveLetter c).sizeMax
         Resize-Partition -DriveLetter c -Size $MaxSize
     }
 
     function Disable-MouseShadow () {
+        Write-Log "[$(Get-Date)] Disable mouse shadow for RPC program"
         Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" -Name "VisualFXSetting" -Value 00000003
         Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects" -Name "CursorShadow" -Value 00000000
         Set-ItemProperty "HKCU:\Control Panel\Desktop" -Name 'UserPreferencesMask' -Value ([byte[]](0x9E,0x1E,0x07,0x80,0x12,0x00,0x00,0x00))
     }
 
-    function Set-DnsResolver ($resolver1, $resolver2) {
-        netsh interface ip add dns name="Ethernet" addr=$resolver1 index=1
-        netsh interface ip add dns name="Ethernet" addr=$resolver2 index=2
+    function Set-DnsResolver ($Resolver1, $Resolver2) {
+        Write-Log "[$(Get-Date)] Set DNS resolver to $resolver1 and $resolver2"
+        netsh interface ip add dns name="Ethernet" addr="$Resolver1" index=1
+        netsh interface ip add dns name="Ethernet" addr="$Resolver2" index=2
     }
 
     function Set-WebPageTestUser ($Username, $Password){
@@ -305,13 +312,13 @@ Function Deploy-WebPagetest(){
     }
     function Set-WptConfig ($Location, $Url, $Key){
         Download-File -url $wpt_urlBlast_ini -localpath $wpt_agent_dir -filename "urlBlast.ini"
-        Replace-String -filePath $wpt_urlBlast_ini -stringToReplace "%%URL%%" -replaceWith $Url
-        Replace-String -filePath $wpt_urlBlast_ini -stringToReplace "%%KEY%%" -replaceWith $Key
+        Replace-String -filePath "$wpt_agent_dir\urlBlast.ini" -stringToReplace "%%URL%%" -replaceWith $Url
+        Replace-String -filePath "$wpt_agent_dir\urlBlast.ini" -stringToReplace "%%KEY%%" -replaceWith $Key
 
         Download-File -url $wpt_wptdriver_ini -localpath $wpt_agent_dir -filename "wptdriver.ini"
-        Replace-String -filePath $wpt_wptdriver_ini -stringToReplace "%%URL%%" -replaceWith $Url
-        Replace-String -filePath $wpt_wptdriver_ini -stringToReplace "%%KEY%%" -replaceWith $Key
-        Replace-String -filePath $wpt_wptdriver_ini -stringToReplace "%%LOCATION%%" -replaceWith $Location
+        Replace-String -filePath "$wpt_agent_dir\wptdriver.ini" -stringToReplace "%%URL%%" -replaceWith $Url
+        Replace-String -filePath "$wpt_agent_dir\wptdriver.ini" -stringToReplace "%%KEY%%" -replaceWith $Key
+        Replace-String -filePath "$wpt_agent_dir\wptdriver.ini" -stringToReplace "%%LOCATION%%" -replaceWith $Location
     }
     function Set-ClosePort445 (){
         $CurrentVal = Get-NetFirewallRule
@@ -330,11 +337,11 @@ Function Deploy-WebPagetest(){
     }
 
     # => Main
-    Set-WindowsLicence $windows_licenceKey
+    Set-WindowsLicense $windows_LicenseKey
     Activate-Windows-Update
-    Set-Keyboard $lang
+    Set-Keyboard -Lang $lang
     ExtendPartition
-    Set-DnsResolver $DnsResolver1, $DnsResolver2
+    Set-DnsResolver -Resolver1 $DnsResolver1, -Resolver2 $DnsResolver2
     Disable-MouseShadow
     Set-WebPageTestUser -Username $wpt_user -Password $wpt_password
     Set-AutoLogon -Username $wpt_user -Password $wpt_password
@@ -355,7 +362,7 @@ Function Deploy-WebPagetest(){
     Set-WebPageTestScheduledTask -ThisHost $wpt_host -User $wpt_user -InstallDir $wpt_agent_dir
     Set-ScheduleDefaultUserName -ThisHost $wpt_host -User $wpt_user -Password $wpt_password -InstallDir $wpt_agent_dir
     Set-ScheduleFirstReboot -ThisHost $wpt_host -User $wpt_user -Password $wpt_password -InstallDir $wpt_agent_dir
-    Set-WptConfig $wpt_location, $wpt_url, $wpt_key
+    Set-WptConfig -Location $wpt_location -Url $wpt_url -Key $wpt_key
     Disable-FindNetDevices
     Set-ClosePort445
 
