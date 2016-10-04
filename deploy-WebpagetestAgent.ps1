@@ -237,6 +237,19 @@ Function Deploy-WebPagetest(){
         } Else {
             bcdedit /set TESTSIGNING ON *>> $Logfile
             Write-Log "[$(Get-Date)] Test Signing Enabled."
+
+            $dummynet = Get-NetAdapterBinding -Name Ethernet
+
+            If ($dummynet.DisplayName -match "dummynet") {
+              Write-Log "[$(Get-Date)] DummyNet already enabled."
+            } Else {
+              Write-Log "[$(Get-Date)] Installation of DummyNet."
+              Import-Certificate -FilePath $InstallDir\WPOFoundation.cer -CertStoreLocation Cert:\LocalMachine\TrustedPublisher
+              cd $InstallDir
+              .\mindinst.exe $InstallDir\dummynet\64bit\netipfw.inf -i -s
+              Enable-NetAdapterBinding -Name Ethernet -DisplayName ipfw+dummynet
+            }
+
         }
     }
     function Set-WebPageTestScheduledTask ($ThisHost, $User,$InstallDir){
@@ -264,22 +277,13 @@ Function Deploy-WebPagetest(){
         }
     }
     function Set-ScheduleDefaultUserName ($ThisHost, $User, $Password, $InstallDir) {
-            Invoke-WebRequest $DefaultUserNameURL -OutFile "$InstallDir\DefaultUserName.ps1" *>> $Logfile
-            Replace-String -filePath "$InstallDir\DefaultUserName.ps1" -stringToReplace "%%USERNAME%%" -replaceWith $User
-            $A = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -File $InstallDir\DefaultUserName.ps1"
-            $T = New-ScheduledTaskTrigger -AtStartup
-            $S = New-ScheduledTaskSettingsSet
-            $D = New-ScheduledTask -Action $A -Trigger $T -Settings $S
-            Register-ScheduledTask -TaskName "DefaultUserName Fix" -InputObject $D -User $User -Password $Password *>> $Logfile
-    }
-
-    function Set-ScheduleFirstReboot ($ThisHost, $User, $Password, $InstallDir) {
-            Invoke-WebRequest $FirstRebootURL -OutFile "$InstallDir\FirstReboot.ps1" *>> $Logfile
-            $A = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -File $InstallDir\FirstReboot.ps1"
-            $T = New-ScheduledTaskTrigger -AtLogon -User $User
-            $S = New-ScheduledTaskSettingsSet
-            $D = New-ScheduledTask -Action $A -Trigger $T -Settings $S
-            Register-ScheduledTask -TaskName "FirstReboot" -InputObject $D -User $User -Password $Password *>> $Logfile
+        Invoke-WebRequest $DefaultUserNameURL -OutFile "$InstallDir\DefaultUserName.ps1" *>> $Logfile
+        Replace-String -filePath "$InstallDir\DefaultUserName.ps1" -stringToReplace "%%USERNAME%%" -replaceWith $User
+        $A = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-ExecutionPolicy Bypass -File $InstallDir\DefaultUserName.ps1"
+        $T = New-ScheduledTaskTrigger -AtStartup
+        $S = New-ScheduledTaskSettingsSet
+        $D = New-ScheduledTask -Action $A -Trigger $T -Settings $S
+        Register-ScheduledTask -TaskName "DefaultUserName Fix" -InputObject $D -User $User -Password $Password *>> $Logfile
     }
 
     function Clean-Deployment{
@@ -361,7 +365,6 @@ Function Deploy-WebPagetest(){
     Set-InstallDummyNet -InstallDir $wpt_agent_dir
     Set-WebPageTestScheduledTask -ThisHost $wpt_host -User $wpt_user -InstallDir $wpt_agent_dir
     Set-ScheduleDefaultUserName -ThisHost $wpt_host -User $wpt_user -Password $wpt_password -InstallDir $wpt_agent_dir
-    Set-ScheduleFirstReboot -ThisHost $wpt_host -User $wpt_user -Password $wpt_password -InstallDir $wpt_agent_dir
     Set-WptConfig -Location $wpt_location -Url $wpt_url -Key $wpt_key
     Disable-FindNetDevices
     Set-ClosePort445
@@ -371,13 +374,3 @@ Function Deploy-WebPagetest(){
 # MAIN : Deploy Web Pagge Test
 Deploy-WebPagetest
 #Deploy-WebPagetest -DomainName "%wptdomain%" -wpt_user "%wptusername%" -wpt_password "%wptpassword%"
-
-# Create Shortcut to IE
-$WshShell = New-Object -ComObject WScript.Shell
-$Shortcut = $WshShell.CreateShortcut("C:\Users\Public\Desktop\Internet Explorer.lnk")
-$Shortcut.TargetPath = "C:\Program Files\Internet Explorer\iexplore.exe"
-$Shortcut.Save()
-# Schedule Reboot
-
-$Future = ((Get-Date).AddMinutes(5)).ToString("HH:mm")
-schtasks /Create /SC ONCE /RU SYSTEM /TN "Single Reboot" /TR "shutdown -r" /ST $Future
