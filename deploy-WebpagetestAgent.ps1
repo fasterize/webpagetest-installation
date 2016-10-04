@@ -342,11 +342,11 @@ Function Deploy-WebPagetest(){
     }
 
     # => Main
-    Set-WindowsLicense -LicenseKey $windows_LicenseKey
+    Set-WindowsLicense -LicenseKey $windows_licenseKey
     Activate-Windows-Update
     Set-Keyboard -Lang $lang
     ExtendPartition
-    Set-DnsResolver -Resolver1 $DnsResolver1, -Resolver2 $DnsResolver2
+    Set-DnsResolver -Resolver1 $DnsResolver1 -Resolver2 $DnsResolver2
     Disable-MouseShadow
     Set-WebPageTestUser -Username $wpt_user -Password $wpt_password
     Set-AutoLogon -Username $wpt_user -Password $wpt_password
