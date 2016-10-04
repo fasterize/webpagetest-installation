@@ -20,5 +20,5 @@ Run the script *as Administrator*.
 
 
 ## Ref :
-https://github.com/Linuturk/webpagetest
-https://github.com/rackspace-orchestration-templates/webpagetest/
+- https://github.com/Linuturk/webpagetest
+- https://github.com/rackspace-orchestration-templates/webpagetest/
