@@ -1,9 +1,3 @@
-# Deployment of an Webpagetest agent
-
-- launch the server in rescue mode
-- connect to the server through SSH
-
-
 ## Download the script `deploy-WebpagetestAgent.ps1`
 
 Update the following lines :
@@ -16,7 +10,14 @@ Update the following lines :
 [String]$windows_licenceKey = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
 ```
 
-Run the script *as Administrator*.
+## Run the script *as Administrator*.
+
+- Create a shortcut to your Powershell script on your desktop
+- Right-click the shortcut and click Properties
+- Edit the command `powershell.exe -NoExit -f deploy-WebpagetestAgent.ps1`
+- Click the Shortcut tab
+- Click Advanced
+- Select Run as Administrator
 
 
 ## Ref :
