@@ -88,7 +88,7 @@ Function Deploy-WebPagetest(){
 
     function Set-Keyboard ($Lang) {
         Write-Log "[$(Get-Date)] Set Keyboard to $lang."
-        Set-WinUserLanguageList -LanguageList $Lang
+        Set-WinUserLanguageList -LanguageList $Lang -Force
     }
 
     function ExtendPartition () {
@@ -122,7 +122,7 @@ Function Deploy-WebPagetest(){
         $user = [ADSI]("WinNT://./$Username")
         $user.SetPassword($Password)
         $user.SetInfo()
-        Write-Log "[$(Get-Date)] $Password updated."
+        Write-Log "[$(Get-Date)] Password updated."
     }
     function Set-AutoLogon ($Username, $Password){
         $LogonPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
@@ -144,6 +144,7 @@ Function Deploy-WebPagetest(){
             Write-Log "[$(Get-Date)] AutoLogon enabled."
         }
     }
+
     function Set-DisableServerManager (){
         $CurrentState = Get-ScheduledTask -TaskName "ServerManager"
         If ($CurrentState.State -eq "Ready") {
@@ -245,9 +246,10 @@ Function Deploy-WebPagetest(){
               Write-Log "[$(Get-Date)] DummyNet already enabled."
             } Else {
               Write-Log "[$(Get-Date)] Installation of DummyNet."
+              Copy-Item -Path $InstallDir\dummynet\64bit\* -Destination $InstallDir\dummynet -Recurse -Force *>> $Logfile
               Import-Certificate -FilePath $InstallDir\WPOFoundation.cer -CertStoreLocation Cert:\LocalMachine\TrustedPublisher
               cd $InstallDir
-              .\mindinst.exe $InstallDir\dummynet\64bit\netipfw.inf -i -s
+              .\mindinst.exe $InstallDir\dummynet\netipfw.inf -i -s
               Enable-NetAdapterBinding -Name Ethernet -DisplayName ipfw+dummynet
             }
 
