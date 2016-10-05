@@ -19,6 +19,8 @@ Update the following lines :
 - Click Advanced
 - Select Run as Administrator
 
+## Pitfull
+- the installation of the driver ipfw+dummynet doesn't seem to work. We reinstalled it manually by following this guide : https://www.fasterize.com/en/blog/guide-for-the-installation-of-a-webpagetest-agent-on/
 
 ## Ref :
 - https://github.com/Linuturk/webpagetest
