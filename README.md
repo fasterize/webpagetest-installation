@@ -7,7 +7,7 @@ Update the following lines :
 [String]$wpt_url = "http://www.webpagetest.com/",
 [String]$wpt_location = "wpt_location",
 [String]$wpt_key = "wpt_key",
-[String]$windows_licenceKey = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
+[String]$windows_licenseKey = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
 ```
 
 ## Run the script *as Administrator*.
