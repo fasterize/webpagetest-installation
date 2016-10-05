@@ -255,29 +255,17 @@ Function Deploy-WebPagetest(){
 
         }
     }
-    function Set-WebPageTestScheduledTask ($ThisHost, $User,$InstallDir){
-        $GetTask = Get-ScheduledTask
-        if ($GetTask.TaskName -match "wptdriver") {
-            Write-Log "[$(Get-Date)] Task (wptdriver) already scheduled."
-        } Else {
-            $A = New-ScheduledTaskAction -Execute "$InstallDir\wptdriver.exe"
-            $T = New-ScheduledTaskTrigger -AtLogon -User $User
-            $S = New-ScheduledTaskSettingsSet
-            $P = New-ScheduledTaskPrincipal -UserId "$ThisHost\$User" -LogonType ServiceAccount
-            Register-ScheduledTask -TaskName "wptdriver" -Action $A -Trigger $T -Setting $S -Principal $P *>> $Logfile
-            Write-Log "[$(Get-Date)] Task (wptdriver) scheduled."
-        }
-        $GetTask = Get-ScheduledTask
-        if ($GetTask.TaskName -match "urlBlast") {
-            Write-Log "[$(Get-Date)] Task (urlBlast) already scheduled."
-        } Else {
-            $A = New-ScheduledTaskAction -Execute "$InstallDir\urlBlast.exe"
-            $T = New-ScheduledTaskTrigger -AtLogon -User $User
-            $S = New-ScheduledTaskSettingsSet
-            $P = New-ScheduledTaskPrincipal -UserId "$ThisHost\$User" -LogonType ServiceAccount
-            Register-ScheduledTask -TaskName "urlBlast" -Action $A -Trigger $T -Setting $S -Principal $P *>> $Logfile
-            Write-Log "[$(Get-Date)] Task (urlBlast) scheduled."
-        }
+    function Set-WebPageTestScheduledTask ($User,$InstallDir){
+        $startupFolder = "C:\Users\$User\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("$startupFolder\wptdriver.exe.lnk")
+        $Shortcut.TargetPath = "$InstallDir\wptdriver.exe"
+        $Shortcut.Save()
+
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("$startupFolder\urlBlast.exe.lnk")
+        $Shortcut.TargetPath = "$InstallDir\urlBlast.exe"
+        $Shortcut.Save()
     }
     function Set-ScheduleDefaultUserName ($ThisHost, $User, $Password, $InstallDir) {
         Invoke-WebRequest $DefaultUserNameURL -OutFile "$InstallDir\DefaultUserName.ps1" *>> $Logfile
@@ -366,7 +354,7 @@ Function Deploy-WebPagetest(){
     Unzip-File -fileName $wpt_zip_file -sourcePath $wpt_temp_dir -destinationPath $wpt_agent_dir
     Set-WebPageTestInstall -tempDir $wpt_temp_dir -AgentDir $wpt_agent_dir
     Set-InstallDummyNet -InstallDir $wpt_agent_dir
-    Set-WebPageTestScheduledTask -ThisHost $wpt_host -User $wpt_user -InstallDir $wpt_agent_dir
+    Set-WebPageTestScheduledTask -User $wpt_user -InstallDir $wpt_agent_dir
     Set-ScheduleDefaultUserName -ThisHost $wpt_host -User $wpt_user -Password $wpt_password -InstallDir $wpt_agent_dir
     Set-WptConfig -Location $wpt_location -Url $wpt_url -Key $wpt_key
     Disable-FindNetDevices
