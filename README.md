@@ -19,8 +19,9 @@ Update the following lines :
 - Click Advanced
 - Select Run as Administrator
 
-## Pitfull
+## Pitfull/Post manual task
 - the installation of the driver ipfw+dummynet doesn't seem to work. We reinstalled it manually by following this guide : https://www.fasterize.com/en/blog/guide-for-the-installation-of-a-webpagetest-agent-on/
+- Launch IE on each server, and click through *Manage Add-on* to enable the Browser Helper Object. Otherwise, your IE tests will fail.
 
 ## Ref :
 - https://github.com/Linuturk/webpagetest
