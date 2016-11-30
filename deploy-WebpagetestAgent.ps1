@@ -256,6 +256,7 @@ Function Deploy-WebPagetest(){
         }
     }
     function Set-WebPageTestScheduledTask ($User,$InstallDir){
+        # for interactive session
         $startupFolder = "C:\Users\$User\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"
         $WshShell = New-Object -ComObject WScript.Shell
         $Shortcut = $WshShell.CreateShortcut("$startupFolder\wptdriver.exe.lnk")
@@ -266,6 +267,30 @@ Function Deploy-WebPagetest(){
         $Shortcut = $WshShell.CreateShortcut("$startupFolder\urlBlast.exe.lnk")
         $Shortcut.TargetPath = "$InstallDir\urlBlast.exe"
         $Shortcut.Save()
+
+        # for background session
+        $GetTask = Get-ScheduledTask
+        if ($GetTask.TaskName -match "wptdriver") {
+            Write-Log "[$(Get-Date)] Task (wptdriver) already scheduled."
+        } Else {
+            $A = New-ScheduledTaskAction -Execute "$InstallDir\wptdriver.exe"
+            $T = New-ScheduledTaskTrigger -AtLogon -User $User
+            $S = New-ScheduledTaskSettingsSet
+            $P = New-ScheduledTaskPrincipal -UserId "$ThisHost\$User" -LogonType ServiceAccount
+            Register-ScheduledTask -TaskName "wptdriver" -Action $A -Trigger $T -Setting $S -Principal $P *>> $Logfile
+            Write-Log "[$(Get-Date)] Task (wptdriver) scheduled."
+        }
+        $GetTask = Get-ScheduledTask
+        if ($GetTask.TaskName -match "urlBlast") {
+            Write-Log "[$(Get-Date)] Task (urlBlast) already scheduled."
+        } Else {
+            $A = New-ScheduledTaskAction -Execute "$InstallDir\urlBlast.exe"
+            $T = New-ScheduledTaskTrigger -AtLogon -User $User
+            $S = New-ScheduledTaskSettingsSet
+            $P = New-ScheduledTaskPrincipal -UserId "$ThisHost\$User" -LogonType ServiceAccount
+            Register-ScheduledTask -TaskName "urlBlast" -Action $A -Trigger $T -Setting $S -Principal $P *>> $Logfile
+            Write-Log "[$(Get-Date)] Task (urlBlast) scheduled."
+        }
     }
     function Set-ScheduleDefaultUserName ($ThisHost, $User, $Password, $InstallDir) {
         Invoke-WebRequest $DefaultUserNameURL -OutFile "$InstallDir\DefaultUserName.ps1" *>> $Logfile
