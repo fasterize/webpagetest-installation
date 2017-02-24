@@ -28,8 +28,8 @@ Function Deploy-WebPagetest(){
     }
 
     # External Dependencies
-    $wpt_zip_url =  "https://github.com/WPO-Foundation/webpagetest/releases/download/WebPageTest-2.19/webpagetest_2.19.zip"
-    $wpt_zip_file = "webpagetest_2.19.zip"
+    $wpt_zip_url =  "https://github.com/WPO-Foundation/webpagetest/releases/download/WebPageTest-3.0/webpagetest_3.0.zip"
+    $wpt_zip_file = "webpagetest_3.0.zip"
 
     # Github Dependencies
     $driver_installer_cert_url = "https://github.com/fasterize/webpagetest-installation/raw/master/files/WPOFoundation.cer"
