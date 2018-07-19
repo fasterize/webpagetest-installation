@@ -4,7 +4,7 @@ Update the following lines :
 
 ```powersheel
 [String]$wpt_password = "p@ssword",
-[String]$wpt_url = "http://www.webpagetest.com/",
+[String]$wpt_url = "http://www.webpagetest.org/",
 [String]$wpt_location = "wpt_location",
 [String]$wpt_key = "wpt_key",
 [String]$windows_licenseKey = "XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
