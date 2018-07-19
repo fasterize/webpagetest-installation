@@ -1,3 +1,5 @@
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+
 # Deployment of Web Page Test
 Function Deploy-WebPagetest(){
     [CmdletBinding()]
@@ -28,9 +30,9 @@ Function Deploy-WebPagetest(){
     }
 
     # External Dependencies
-    $wpt_zip_url =  "https://github.com/WPO-Foundation/webpagetest/releases/download/WebPageTest-3.0/webpagetest_3.0.zip"
-    $wpt_zip_file = "webpagetest_3.0.zip"
-
+    $wpt_zip_url =  "https://github.com/WPO-Foundation/webpagetest/releases/download/WebPageTest-17.12/webpagetest_17.12.zip"
+    $wpt_zip_file = "webpagetest_17.12.zip"
+    
     # Github Dependencies
     $driver_installer_cert_url = "https://github.com/fasterize/webpagetest-installation/raw/master/files/WPOFoundation.cer"
     $driver_installer_url = "https://raw.githubusercontent.com/fasterize/webpagetest-installation/master/files/mindinst.exe"
